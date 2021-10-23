@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="js/pixi.min.js"></script>
+    <script>
+		var app = new PIXI.Application(1080,960);
+        document.body.appendChild(app.view);
+		
+        var bg = new PIXI.Sprite.fromImage("res/bg.jpg");
+        app.stage.addChild(bg);
+        bg.anchor.set(0.5,1);
+        bg.x=480;
+        bg.y=915;
+		bg.visible=false;
+		
+		var startbg = new PIXI.Sprite.fromImage("res/startbg.png");
+		app.stage.addChild(startbg);
+		startbg.interactive=true;
+		startbg.on("click",startgame);
+		startbg.anchor.set(0.5,1);
+		startbg.x=480;
+		startbg.y=600;
+		
+		const menu_music = new Audio("res/menu.ogg");
+		const game_music = new Audio("res/dogsong.ogg");
+		const over_music = new Audio("res/gameover.ogg");
+		const get_music = new Audio("res/get.ogg");
+		menu_music.play();
+		
+		var startText = new PIXI.Text("开始游戏");
+		startText.style.fill = 0xffffff;
+		startText.anchor.set(0.5,0.5);
+		app.stage.addChild(startText);
+		startText.x=480;
+		startText.y=550;
+		
+		var scoreText = new PIXI.Text("得分：");
+		scoreText.style.fill = 0xffffff;
+		app.stage.addChild(scoreText);
+		scoreText.visible=false;
+		scoreText.x=290;
+		scoreText.y=200;
+		
+		var startmusic=1;
+		var start=1;
+		var gameover=1;
+		function startgame(){
+			startmusic=2;
+			start=2;
+			startbg.visible=false;
+			bg.visible=true;
+			scoreText.visible=true;
+			startText.visible=false;
+		}
+		
+		
+		var dog = new PIXI.Sprite.fromImage("res/dog.png");
+		app.stage.addChild(dog);
+		dog.anchor.set(0.5,0.5);
+		dog.scale.set(2,2);
+		dog.x=bg.x;
+		dog.y=895;
+		
+		dog.interactive = true;
+		dog.on("mousemove", moveDog);
+		function moveDog(event){
+		    var pos = event.data.getLocalPosition(app.stage);
+			if(pos.x>290&&pos.x<670){
+				dog.x = pos.x;
+			}
+			if(pos.x<=290) dog.x=290;
+			if(pos.x>=670) dog.x=670;
+		}
+		
+				
+		var score=0;
+		var isJump=1;
+		var isDown=1;
+		var canJump=1;
+		var jump=1;
+		var down=2;
+		
+		bg.interactive=true;
+		bg.on("click", jumpDog);
+		function jumpDog(){
+			if(dog.y>=890) isJump=2;
+		}
+		
+		var kaishi=1;
+		
+		var boneNum=0;
+		var boneList=[];
+		var create=2;
+		var createTime=1;
+		var time=1;
+		var musictime=1;
+		
+		
+		var restart = new PIXI.Sprite.fromImage("res/restart.png");
+		app.stage.addChild(restart);
+		restart.interactive=true;
+		restart.on("click",re);
+		restart.visible=false;
+		restart.anchor.set(0.5,0.5);
+		restart.scale.set(3,3);
+		restart.x=480;
+		restart.y=550;
+		
+		function re(){
+			location.reload();
+		}
+		
+		
+		app.ticker.add(animate);
+		function animate(){
+			if(start==2&&gameover==1){
+				musictime++;
+				if(musictime==1800){
+					game_music.play();
+					musictime=0;
+				}
+				if (startmusic==2){
+					menu_music.pause();
+					game_music.play();
+					startmusic=3;
+				}
+				scoreText.text = "得分："+score;
+				var hard=Math.round(50+score/10);
+				if(bg.y>=1200){
+					bg.y=1000;
+				}
+				
+				if(isJump==2&&canJump==1){
+					time ++;
+					dog.y-=3;
+					if(time==50){
+						isJump=1;
+						time=0;
+						isDown=2;
+						canJump=2;
+					}
+				}
+				if(isDown==2){
+					time ++;
+					dog.y++;
+					if(time==50){
+						time=0;
+						isDown=1;
+						canJump=1;
+					}
+				}
+				
+				if(jump==2){
+					time ++;
+					dog.y-=3;
+					bg.y+=0.75;
+					if(time==80){
+						time=0;
+						jump=1;
+					}
+				}
+				if(down==2){
+					if(dog.y<895){
+						dog.y++;
+						
+					}
+					else if(dog.y=895);
+				}
+				
+				if(create==2){
+					createTime++;
+					if(createTime==hard){
+						var bone = new PIXI.Sprite.fromImage("res/bone.png");
+						bone.x = Math.random() * (670-290) + 290;
+						bone.y = 7;
+						app.stage.addChild(bone);
+						bone.anchor.set(0.5,0.5);
+						boneList.push(bone);
+						createTime=0;
+						boneNum++;
+					}
+					for(var i=0;i<boneNum;i++){
+						boneList[i].y+=2;
+					}
+					for(var i=0;i<boneNum;i++){
+						if(boneList[i].y>=850) app.stage.removeChild(boneList[i]);
+					}
+					for(var i=0;i<boneNum;i++){
+						var istantX=boneList[i].x-dog.x;
+						if(istantX<0) istantX = -istantX;
+						var istantY=boneList[i].y-dog.y;
+						if(istantY<0) istantY = -istantY;
+						if(istantX<=(boneList[i].width*0.5+dog.width*0.5)&&istantY<=(dog.height*0.5+boneList[i].height*0.5)){
+							kaishi=2;
+							jump=2;
+							down=2;
+							app.stage.removeChild(boneList[i]);
+							score ++;
+							get_music.play();
+						}
+					}
+				}
+				if(dog.y==850&&kaishi==2){
+					gameover=2;
+					var overText = new PIXI.Text("游戏结束");
+					overText.style.fill = 0xffffff;
+					overText.anchor.set(0.5,0.5);
+					app.stage.addChild(overText);
+					overText.x=480;
+					overText.y=450;
+					
+					
+					var oversText = new PIXI.Text("你的分数为：");
+					oversText.style.fill = 0xffffff;
+					oversText.anchor.set(0.5,0.5);
+					app.stage.addChild(oversText);
+					oversText.text = "你的分数为："+score;
+					oversText.x=480;
+					oversText.y=500;
+					scoreText.visible=false;
+					
+					game_music.pause();
+					over_music.play();
+					
+					restart.visible=true;
+				}
+			}
+		}
+		
+    </script>
+</body>
+</html>
