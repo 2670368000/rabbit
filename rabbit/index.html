@@ -132,9 +132,6 @@
 				}
 				scoreText.text = "得分："+score;
 				var hard=Math.round(50+score/10);
-				if(bg.y>=1200){
-					bg.y=1000;
-				}
 				
 				if(isJump==2&&canJump==1){
 					time ++;
@@ -156,10 +153,9 @@
 					}
 				}
 				
-				if(jump==2){
+				if(jump==2&&dog.y>=20){
 					time ++;
 					dog.y-=3;
-					bg.y+=0.75;
 					if(time==80){
 						time=0;
 						jump=1;
